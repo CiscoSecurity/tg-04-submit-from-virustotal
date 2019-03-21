@@ -10,19 +10,20 @@ NOTE: This script requires a VirusTotal Enterprise account
 
 ### Usage:
 ```
-python submit_from_virustotal.py
+python submit_from_virustotal.py c225c488312f5cbd876072215aaeca66eda206448f90f35ca59d9c9f825b3528
 ```
 or
 ```
-python submit_from_virustotal.py 7c9f50fb47d205fea9422af09a1218342a8b0cfbf4435d9cd808fb530af4b23b
+python submit_from_virustotal.py
+Enter a SHA256: c225c488312f5cbd876072215aaeca66eda206448f90f35ca59d9c9f825b3528
 ```
 
 ### Example script output:
 ```
-Enter a SHA256: 7c9f50fb47d205fea9422af09a1218342a8b0cfbf4435d9cd808fb530af4b23b
-Retrieving filename for: 7c9f50fb47d205fea9422af09a1218342a8b0cfbf4435d9cd808fb530af4b23b
+Checking for file in Threat Grid
+Retrieving filename for: c225c488312f5cbd876072215aaeca66eda206448f90f35ca59d9c9f825b3528
 Got: RFQ Request For Quotation.exe
 Downloading file from VirusTotal - DONE!
 Submitting to Threat Grid
-Sample ID: 8b5eaaa1e2a85d1dc6d5be6b8634d94a
+Sample ID: 9e1297bbd5726e00a9fdbf58b794f315
 ```
