@@ -55,23 +55,50 @@ def filename_from_virustotal(vt_apikey, sha256):
     headers = {'x-apikey': vt_apikey}
     vt_response = requests.get(url, headers=headers)
     exit_if_fail(vt_response)
-    return vt_response.json()['data']['attributes']['meaningful_name']
+    try:
+        return vt_response.json()['data']['attributes']['meaningful_name']
+    except KeyError:
+        return sha256
+
+def search_in_threat_grid(tg_api_key, sha256):
+    '''Search Threat Grid for the SHA256
+    '''
+    url = 'https://panacea.threatgrid.com/api/v2/search/submissions'
+    parameters = {'limit':1,
+                  'state':'succ',
+                  'after':'2015-01-01',
+                  'api_key': tg_api_key,
+                  'sort_by':'threat_score',
+                  'q':'{}'.format(sha256)}
+
+    tg_response = requests.get(url, params=parameters)
+    exit_if_fail(tg_response)
+    return tg_response
+
+def verify_in_threat_grid(search_response):
+    '''Verify if the SHA256 is already in Threat Grid
+    '''
+    search_response = search_response.json()
+    return bool(search_response['data']['current_item_count'] == 1)
 
 def submit_to_threat_grid(tg_api_key, file, sample_filename):
     '''Submit file to Threat Grid
     '''
-    tg_url = 'https://panacea.threatgrid.com/api/v2/samples'
+    url = 'https://panacea.threatgrid.com/api/v2/samples'
     form_data = {'api_key': tg_api_key,
                  'sample_filename': sample_filename,
                  'playbook': 'none'}
     sample = {'sample': file}
-    tg_response = requests.post(tg_url, files=sample, data=form_data, verify=True)
+    tg_response = requests.post(url, files=sample, data=form_data, verify=True)
     exit_if_fail(tg_response)
     return tg_response
 
 def main():
     '''Main script logic
     '''
+    vt_apikey = 'asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234a'
+    tg_api_key = 'asdf1234asdf1234asdf1234'
+
     try:
         sha256 = sys.argv[1]
         if not validate_sha256(sha256):
@@ -80,8 +107,12 @@ def main():
     except IndexError:
         sha256 = ask_for_sha256()
 
-    vt_apikey = 'asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234a'
-    tg_api_key = 'asdf1234asdf1234asdf1234'
+    print('Checking for file in Threat Grid')
+    tg_search_response = search_in_threat_grid(tg_api_key, sha256)
+    if verify_in_threat_grid(tg_search_response):
+        existing_sample_id = tg_search_response.json()['data']['items'][0]['item']['sample']
+        sys.exit('The file already exists in Threat Grid'
+                 '\nSample ID: {}'.format(existing_sample_id))
 
     print('Retrieving filename for: {}'.format(sha256))
 
